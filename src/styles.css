@@ -1,0 +1,62 @@
+@import 'tailwindcss';
+@import '@fontsource/geist-sans/400.css';
+@import '@fontsource/geist-sans/500.css';
+@import '@fontsource/geist-sans/600.css';
+@import '@fontsource/geist-mono/400.css';
+@import '@fontsource/geist-mono/500.css';
+
+@theme {
+  --font-sans: 'Geist Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, monospace;
+
+  --color-tlai-0: #1a1a1a;
+  --color-tlai-1: #121212;
+  --color-tlai-2: #191919;
+  --color-tlai-3: #1f1f1f;
+  --color-tlai-4: #303030;
+  --color-tlai-card: #161616;
+  --color-tlai-mint: #afffde;
+  --color-tlai-amber: #edb74d;
+  --color-tlai-blue: #94cbff;
+  --color-tlai-purple: #8e7aff;
+  --color-tlai-green-velvet: #027746;
+  --color-tessera-sidebar-accent: #262626;
+  --color-muted-foreground: oklch(0.708 0 0);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--color-tlai-1);
+  color: #fff;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
