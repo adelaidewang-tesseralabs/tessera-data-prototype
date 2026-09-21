@@ -11,8 +11,10 @@ npm run dev
 
 Open [http://localhost:5179](http://localhost:5179).
 
-## Deploy
+## Deploy (Railway)
 
 ```bash
-npm run deploy
+railway login
+railway init
+railway up
 ```
