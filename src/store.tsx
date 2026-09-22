@@ -15,6 +15,7 @@ import {
   INITIAL_FAVORITES,
   INITIAL_LIBRARIES,
   INITIAL_NEXUS_PROJECTS,
+  INITIAL_WORKSTREAMS,
   type Dashboard,
   type DashboardType,
   type DataCheck,
@@ -22,6 +23,7 @@ import {
   type FoundryExport,
   type Library,
   type NexusProject,
+  type Workstream,
 } from './data/mock'
 
 type Store = {
@@ -32,12 +34,14 @@ type Store = {
   executions: Execution[]
   exports: FoundryExport[]
   nexusProjects: NexusProject[]
+  workstreams: Workstream[]
   toggleFavorite: (id: string) => void
   createDashboard: (input: {
     name: string
     type: DashboardType
     workstream?: string
     description?: string
+    linkedSuiteId?: string
   }) => Dashboard
   updateDashboard: (id: string, patch: Partial<Dashboard>) => void
   deleteDashboard: (id: string) => void
@@ -45,6 +49,7 @@ type Store = {
   updateLibrary: (id: string, patch: Partial<Library>) => void
   deleteLibrary: (id: string) => void
   simulateExecuteAll: (dashboardId: string) => void
+  runChecks: (checkIds: string[]) => void
   createExport: (name: string) => void
   createNexusProject: (name: string, description?: string) => NexusProject
 }
@@ -59,22 +64,30 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [dashboards, setDashboards] = useState(INITIAL_DASHBOARDS)
   const [favorites, setFavorites] = useState(INITIAL_FAVORITES)
   const [libraries, setLibraries] = useState(INITIAL_LIBRARIES)
-  const [checks] = useState(INITIAL_CHECKS)
+  const [checks, setChecks] = useState(INITIAL_CHECKS)
   const [executions, setExecutions] = useState(INITIAL_EXECUTIONS)
   const [exports, setExports] = useState(INITIAL_EXPORTS)
   const [nexusProjects, setNexusProjects] = useState(INITIAL_NEXUS_PROJECTS)
+  const [workstreams] = useState(INITIAL_WORKSTREAMS)
 
   const toggleFavorite = useCallback((id: string) => {
     setFavorites((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
   }, [])
 
   const createDashboard = useCallback(
-    (input: { name: string; type: DashboardType; workstream?: string; description?: string }) => {
+    (input: {
+      name: string
+      type: DashboardType
+      workstream?: string
+      description?: string
+      linkedSuiteId?: string
+    }) => {
       const dashboard: Dashboard = {
         id: uid('dash'),
         name: input.name,
         description: input.description,
         workstream: input.workstream || undefined,
+        linkedSuiteId: input.linkedSuiteId,
         type: input.type,
         updatedAt: new Date().toISOString(),
         updatedBy: 'adelaide@tesseralabs.ai',
@@ -174,6 +187,52 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [dashboards],
   )
 
+  const runChecks = useCallback((checkIds: string[]) => {
+    if (checkIds.length === 0) return
+    const now = new Date().toISOString()
+    setChecks((prev) =>
+      prev.map((c) =>
+        checkIds.includes(c.id) ? { ...c, status: 'RUNNING' as const, lastRun: now } : c,
+      ),
+    )
+    setExecutions((prev) => [
+      ...checkIds.map((id) => {
+        const check = INITIAL_CHECKS.find((c) => c.id === id)
+        return {
+          id: uid('ex'),
+          dashboardId: 'checks',
+          dashboardName: 'Data Checks',
+          checkName: check?.name ?? id,
+          status: 'RUNNING' as const,
+          startedAt: now,
+          durationMs: 0,
+        }
+      }),
+      ...prev,
+    ])
+    window.setTimeout(() => {
+      setChecks((prev) =>
+        prev.map((c) =>
+          checkIds.includes(c.id)
+            ? {
+                ...c,
+                status: 'COMPLETED' as const,
+                issueCount: c.issueCount || Math.floor(Math.random() * 40),
+                scanned: c.scanned || 1000 + Math.floor(Math.random() * 5000),
+              }
+            : c,
+        ),
+      )
+      setExecutions((prev) =>
+        prev.map((e) =>
+          e.status === 'RUNNING' && e.dashboardId === 'checks'
+            ? { ...e, status: 'COMPLETED' as const, durationMs: 1800 + Math.floor(Math.random() * 2000) }
+            : e,
+        ),
+      )
+    }, 1600)
+  }, [])
+
   const createExport = useCallback((name: string) => {
     setExports((prev) => [
       {
@@ -210,6 +269,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       executions,
       exports,
       nexusProjects,
+      workstreams,
       toggleFavorite,
       createDashboard,
       updateDashboard,
@@ -218,6 +278,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       updateLibrary,
       deleteLibrary,
       simulateExecuteAll,
+      runChecks,
       createExport,
       createNexusProject,
     }),
@@ -229,6 +290,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       executions,
       exports,
       nexusProjects,
+      workstreams,
       toggleFavorite,
       createDashboard,
       updateDashboard,
@@ -237,6 +299,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       updateLibrary,
       deleteLibrary,
       simulateExecuteAll,
+      runChecks,
       createExport,
       createNexusProject,
     ],

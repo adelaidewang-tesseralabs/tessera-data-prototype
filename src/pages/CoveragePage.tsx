@@ -39,7 +39,7 @@ export function CoveragePage() {
       ...libSample.map((l, i) => ({
         id: l.id,
         position: { x: 80 + (i % 2) * 260, y: 320 + Math.floor(i / 2) * 100 },
-        data: { label: l.name, type: 'Library', detail: `${l.checkCount} checks` },
+        data: { label: l.name, type: 'Policy', detail: `${l.checkCount} checks` },
         style: nodeStyle('#027746'),
       })),
       ...checkSample.map((c, i) => ({
@@ -107,7 +107,7 @@ export function CoveragePage() {
         </ReactFlow>
         <div className="absolute top-3 left-3 flex gap-2 text-xs">
           <Legend color="#8e7aff" label="Dashboard" />
-          <Legend color="#027746" label="Library" />
+          <Legend color="#027746" label="Policy" />
           <Legend color="#94cbff" label="Check" />
         </div>
         {selected && (

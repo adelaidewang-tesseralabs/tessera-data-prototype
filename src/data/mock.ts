@@ -6,12 +6,24 @@ export type Dashboard = {
   name: string
   description?: string
   workstream?: string
+  /** Policy this dashboard subscribes to for quality metrics */
+  linkedSuiteId?: string
   updatedAt: string
   updatedBy: string
   type: DashboardType
   lastExecution?: string
   qualityScore?: number | null
   favoriteVignette?: 'last_execution' | 'quality_score'
+}
+
+export type Workstream = {
+  id: string
+  name: string
+  description: string
+  sourceCount: number
+  checkCount: number
+  dashboardCount: number
+  updatedAt: string
 }
 
 export type Library = {
@@ -24,6 +36,10 @@ export type Library = {
   updatedBy: string
 }
 
+export type CheckPriority = 'High' | 'Medium' | 'Low'
+export type CheckDimension = 'Activity' | 'Sales' | 'Master Data' | 'Finance' | 'Quality'
+export type CheckType = 'RFC' | 'FOUNDRY' | 'FILE_UPLOAD' | 'WORKFLOW'
+
 export type DataCheck = {
   id: string
   name: string
@@ -32,6 +48,13 @@ export type DataCheck = {
   issueCount: number
   scanned: number
   lastRun?: string
+  ruleNo?: string
+  issueDescription?: string
+  priority?: CheckPriority
+  dimension?: CheckDimension
+  checkType?: CheckType
+  createdAt?: string
+  updatedAt?: string
 }
 
 export type Execution = {
@@ -42,6 +65,15 @@ export type Execution = {
   status: ExecutionStatus
   startedAt: string
   durationMs: number
+}
+
+export type PolicyActivityEvent = {
+  id: string
+  libraryId: string
+  action: string
+  detail: string
+  actor: string
+  at: string
 }
 
 export type FoundryExport = {
@@ -121,6 +153,7 @@ export const INITIAL_DASHBOARDS: Dashboard[] = [
     lastExecution: '2026-08-12T06:39:39.000Z',
     qualityScore: 94.2,
     favoriteVignette: 'last_execution',
+    linkedSuiteId: 'lib-vendor',
   },
   {
     id: 'dash-adelaide',
@@ -132,6 +165,7 @@ export const INITIAL_DASHBOARDS: Dashboard[] = [
     type: 'HARMONIZATION',
     qualityScore: null,
     favoriteVignette: 'quality_score',
+    linkedSuiteId: 'lib-olivier',
   },
   {
     id: 'dash-mcp',
@@ -139,6 +173,7 @@ export const INITIAL_DASHBOARDS: Dashboard[] = [
     updatedAt: hoursAgo(12),
     updatedBy: emails[0],
     type: 'HARMONIZATION',
+    linkedSuiteId: 'lib-vendor',
   },
   {
     id: 'dash-olivier',
@@ -148,6 +183,7 @@ export const INITIAL_DASHBOARDS: Dashboard[] = [
     updatedBy: emails[3],
     type: 'HARMONIZATION',
     qualityScore: 88.1,
+    linkedSuiteId: 'lib-olivier',
   },
   {
     id: 'dash-testdh',
@@ -157,6 +193,7 @@ export const INITIAL_DASHBOARDS: Dashboard[] = [
     updatedBy: emails[1],
     type: 'HARMONIZATION',
     qualityScore: 91.5,
+    linkedSuiteId: 'lib-bp',
   },
   ...Array.from({ length: 45 }, (_, i) => {
     const name = seededNames[i % seededNames.length]
@@ -190,7 +227,7 @@ export const INITIAL_LIBRARIES: Library[] = [
   {
     id: 'lib-bp',
     name: 'Business Partner Migration',
-    description: 'SAP BP migration validation suite',
+    description: 'SAP BP migration validation template',
     workstream: 'SAP BP Migration',
     checkCount: 42,
     updatedAt: daysAgo(3),
@@ -230,6 +267,13 @@ export const INITIAL_CHECKS: DataCheck[] = [
     issueCount: 12,
     scanned: 15420,
     lastRun: hoursAgo(4),
+    ruleNo: 'VM001',
+    issueDescription: 'Vendor legal name missing',
+    priority: 'High',
+    dimension: 'Master Data',
+    checkType: 'FOUNDRY',
+    createdAt: daysAgo(40),
+    updatedAt: daysAgo(2),
   },
   {
     id: 'chk-2',
@@ -239,6 +283,13 @@ export const INITIAL_CHECKS: DataCheck[] = [
     issueCount: 48,
     scanned: 15420,
     lastRun: hoursAgo(4),
+    ruleNo: 'VM002',
+    issueDescription: 'Invalid tax ID pattern',
+    priority: 'Medium',
+    dimension: 'Master Data',
+    checkType: 'RFC',
+    createdAt: daysAgo(38),
+    updatedAt: daysAgo(2),
   },
   {
     id: 'chk-3',
@@ -248,6 +299,13 @@ export const INITIAL_CHECKS: DataCheck[] = [
     issueCount: 210,
     scanned: 15420,
     lastRun: hoursAgo(5),
+    ruleNo: 'VM003',
+    issueDescription: 'Payment terms blank',
+    priority: 'High',
+    dimension: 'Finance',
+    checkType: 'FOUNDRY',
+    createdAt: daysAgo(30),
+    updatedAt: daysAgo(1),
   },
   {
     id: 'chk-4',
@@ -257,6 +315,13 @@ export const INITIAL_CHECKS: DataCheck[] = [
     issueCount: 3,
     scanned: 8200,
     lastRun: daysAgo(1),
+    ruleNo: 'BP001',
+    issueDescription: 'Missing BP roles',
+    priority: 'Medium',
+    dimension: 'Master Data',
+    checkType: 'RFC',
+    createdAt: daysAgo(25),
+    updatedAt: daysAgo(1),
   },
   {
     id: 'chk-5',
@@ -265,6 +330,13 @@ export const INITIAL_CHECKS: DataCheck[] = [
     status: 'RUNNING',
     issueCount: 0,
     scanned: 0,
+    ruleNo: 'BP002',
+    issueDescription: 'Bank country mismatch',
+    priority: 'Low',
+    dimension: 'Finance',
+    checkType: 'WORKFLOW',
+    createdAt: daysAgo(20),
+    updatedAt: hoursAgo(2),
   },
   {
     id: 'chk-6',
@@ -274,6 +346,13 @@ export const INITIAL_CHECKS: DataCheck[] = [
     issueCount: 7,
     scanned: 4100,
     lastRun: daysAgo(2),
+    ruleNo: 'GL001',
+    issueDescription: 'GL type inconsistent',
+    priority: 'Medium',
+    dimension: 'Finance',
+    checkType: 'FOUNDRY',
+    createdAt: daysAgo(45),
+    updatedAt: daysAgo(2),
   },
   {
     id: 'chk-7',
@@ -282,6 +361,13 @@ export const INITIAL_CHECKS: DataCheck[] = [
     status: 'PENDING',
     issueCount: 0,
     scanned: 0,
+    ruleNo: 'CC001',
+    issueDescription: 'Owner not assigned',
+    priority: 'High',
+    dimension: 'Finance',
+    checkType: 'FILE_UPLOAD',
+    createdAt: daysAgo(12),
+    updatedAt: daysAgo(5),
   },
   {
     id: 'chk-8',
@@ -291,6 +377,80 @@ export const INITIAL_CHECKS: DataCheck[] = [
     issueCount: 91,
     scanned: 22000,
     lastRun: daysAgo(3),
+    ruleNo: 'MM001',
+    issueDescription: 'Description too short',
+    priority: 'Low',
+    dimension: 'Quality',
+    checkType: 'FOUNDRY',
+    createdAt: daysAgo(60),
+    updatedAt: daysAgo(3),
+  },
+]
+
+export const INITIAL_POLICY_ACTIVITIES: PolicyActivityEvent[] = [
+  {
+    id: 'pa-1',
+    libraryId: 'lib-vendor',
+    action: 'Rule added',
+    detail: 'Added rule “Payment terms populated” (VM003)',
+    actor: 'adelaide@tesseralabs.ai',
+    at: daysAgo(1),
+  },
+  {
+    id: 'pa-2',
+    libraryId: 'lib-vendor',
+    action: 'Rule edited',
+    detail: 'Updated priority on “Tax ID format valid” to Medium',
+    actor: 'neeraj@tesseralabs.ai',
+    at: daysAgo(2),
+  },
+  {
+    id: 'pa-3',
+    libraryId: 'lib-vendor',
+    action: 'Linked dashboard',
+    detail: 'Linked to “Vendor Master Data”',
+    actor: 'adelaide@tesseralabs.ai',
+    at: daysAgo(4),
+  },
+  {
+    id: 'pa-4',
+    libraryId: 'lib-vendor',
+    action: 'Rule removed',
+    detail: 'Removed obsolete rule “Legacy vendor code check”',
+    actor: 'olivier@tesseralabs.ai',
+    at: daysAgo(7),
+  },
+  {
+    id: 'pa-5',
+    libraryId: 'lib-bp',
+    action: 'Policy renamed',
+    detail: 'Renamed policy to “SAP BP Completeness”',
+    actor: 'sophia@tesseralabs.ai',
+    at: daysAgo(3),
+  },
+  {
+    id: 'pa-6',
+    libraryId: 'lib-bp',
+    action: 'Rule added',
+    detail: 'Added rule “Bank account country match” (BP002)',
+    actor: 'adelaide@tesseralabs.ai',
+    at: hoursAgo(6),
+  },
+  {
+    id: 'pa-7',
+    libraryId: 'lib-finance',
+    action: 'Rule added',
+    detail: 'Added rule “Cost center owner assigned” (CC001)',
+    actor: 'arihant@tesseralabs.ai',
+    at: daysAgo(5),
+  },
+  {
+    id: 'pa-8',
+    libraryId: 'lib-material',
+    action: 'Linked dashboard',
+    detail: 'Linked to a material quality dashboard',
+    actor: 'adelaide@tesseralabs.ai',
+    at: daysAgo(8),
   },
 ]
 
@@ -479,4 +639,43 @@ export const QUALITY_TREND = [
   { week: 'W4', score: 91 },
   { week: 'W5', score: 93 },
   { week: 'W6', score: 94 },
+]
+
+export const INITIAL_WORKSTREAMS: Workstream[] = [
+  {
+    id: 'ws-vendor',
+    name: 'Vendor MDM',
+    description: 'Import vendor master → validate → quality dashboards',
+    sourceCount: 3,
+    checkCount: 18,
+    dashboardCount: 4,
+    updatedAt: hoursAgo(6),
+  },
+  {
+    id: 'ws-bp',
+    name: 'SAP BP Migration',
+    description: 'Business partner cutover quality program',
+    sourceCount: 5,
+    checkCount: 42,
+    dashboardCount: 6,
+    updatedAt: daysAgo(1),
+  },
+  {
+    id: 'ws-olivier',
+    name: 'Olivier',
+    description: 'Scratch workstream for experiments',
+    sourceCount: 2,
+    checkCount: 9,
+    dashboardCount: 3,
+    updatedAt: hoursAgo(3),
+  },
+  {
+    id: 'ws-finance',
+    name: 'Finance Close',
+    description: 'GL and cost center integrity before close',
+    sourceCount: 4,
+    checkCount: 27,
+    dashboardCount: 5,
+    updatedAt: daysAgo(4),
+  },
 ]

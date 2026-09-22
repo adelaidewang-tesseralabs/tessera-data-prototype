@@ -10,6 +10,7 @@ import {
   Star,
 } from 'lucide-react'
 import { useStore } from '../store'
+import { useIaMode } from '../context/IaModeContext'
 import type { Dashboard, DashboardType } from '../data/mock'
 import { formatFullDate, formatRelative } from '../lib/format'
 import { cn } from '../lib/cn'
@@ -29,6 +30,7 @@ export function DashboardsPage() {
     updateDashboard,
     deleteDashboard,
   } = useStore()
+  const { option, meta } = useIaMode()
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
@@ -61,7 +63,19 @@ export function DashboardsPage() {
 
   return (
     <div className="mx-auto flex w-full flex-col gap-4 p-5">
-      <FeatureHeader title="Data Harmonization" Icon={ChartColumn} />
+      <FeatureHeader title="Dashboards" Icon={ChartColumn}>
+        {option === '2'
+          ? 'Insights layer — apply a Quality policy when creating a dashboard; scores come from those rules on imported data.'
+          : option === '2-1'
+            ? 'Insights layer — quality scores come from policies under Quality.'
+            : option === '3'
+              ? 'Cross-workstream list. Day-to-day work happens inside a workstream.'
+              : 'Consume checked data. Link a policy for quality readouts — do not own checks here.'}
+      </FeatureHeader>
+
+      <div className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-xs text-white/55">
+        Viewing: <span className="text-white/80">{meta.label}</span>
+      </div>
 
       {favoriteDashboards.length > 0 && (
         <section className="flex flex-col gap-2">

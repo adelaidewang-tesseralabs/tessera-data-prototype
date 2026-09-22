@@ -97,7 +97,7 @@ export function AdminPortalPage() {
         <section className="rounded-xl border border-white/10 p-4">
           <h2 className="mb-2 text-sm font-medium text-white">Import / Export packages</h2>
           <p className="mb-3 text-sm text-white/50">
-            Move Harmonization dashboards and libraries between tenants.
+            Move Harmonization dashboards and policies between tenants.
           </p>
           <div className="flex gap-2">
             <Button variant="outline">Import package</Button>
